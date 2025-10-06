@@ -1,0 +1,204 @@
+openapi: 3.0.3
+info:
+  title: GitHub Repository Scorer API
+  description: API for scoring GitHub repositories based on various metrics
+  version: 1.0.0
+  contact:
+    name: Gerard
+    email: gerard@geal.me
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: repository_scoring
+
+paths:
+  /api/v1/repositories/scores:
+    get:
+      tags:
+        - repository_scoring
+      summary: Score GitHub repositories
+      description: Retrieve and score GitHub repositories based on search criteria
+      operationId: scoreRepositories
+      parameters:
+        - name: request
+          in: query
+          description: Repository search criteria
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: '#/components/schemas/RepositoriesScoringRequest'
+        - name: page
+          in: query
+          description: Pagination parameters
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: '#/components/schemas/PageRequest'
+      responses:
+        '200':
+          description: Successfully retrieved and scored repositories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryScorePage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    RepositoriesScoringRequest:
+      type: object
+      description: Repository search criteria
+      properties:
+        earliestCreationDate:
+          type: string
+          format: date-time
+          description: Earliest creation date for repositories (ISO 8601 format)
+          example: "2024-01-01T00:00:00Z"
+        language:
+          type: string
+          description: Programming language of the repositories
+          example: "java"
+        org:
+          type: string
+          description: Organization name to filter repositories
+          example: "spring-projects"
+        repo:
+          type: string
+          description: Repository name to filter repositories (partial match supported)
+          example: "spring-boot"
+
+    PageRequest:
+      type: object
+      description: Pagination request parameters
+      properties:
+        page:
+          type: integer
+          format: int32
+          description: Page number (0-based)
+          minimum: 0
+          default: 0
+        size:
+          type: integer
+          format: int32
+          description: Number of items per page
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    RepositoryScorePage:
+      type: object
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryScore'
+        page:
+          type: integer
+          description: Current page number (0-based)
+          example: 0
+        size:
+          type: integer
+          description: Number of items per page
+          example: 20
+        totalElements:
+          type: integer
+          description: Total number of elements across all pages
+          example: 150
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 8
+
+    RepositoryScore:
+      type: object
+      required:
+        - name
+        - url
+        - score
+      properties:
+        name:
+          type: string
+          description: Repository name
+          example: "spring-boot"
+        url:
+          type: string
+          format: uri
+          description: Repository URL
+          example: "https://github.com/spring-projects/spring-boot"
+        score:
+          type: number
+          format: float
+          description: Calculated score for the repository
+          example: 85.67
+
+    ProblemDetail:
+      type: object
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference that identifies the problem type
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          format: uri
+          nullable: true
+          description: A URI reference that identifies the specific occurrence of the problem
+      additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Validation Error"
+            status: 400
+            detail: "Request validation failed"
+            payload:
+              - code: "earliestCreationDate.notInFuture"
+                message: "Date cannot be in the future"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "about:blank"
+            title: "Internal Server Error"
+            status: 500
+            detail: "An unexpected error occurred"

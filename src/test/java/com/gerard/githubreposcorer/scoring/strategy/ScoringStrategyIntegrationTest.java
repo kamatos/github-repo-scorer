@@ -18,7 +18,7 @@ class ScoringStrategyIntegrationTest {
     void shouldFailApplicationStartupIfWeightsAreIncorrect() {
         SpringApplication application = new SpringApplication(DummyConfig.class);
 
-        try (ConfigurableApplicationContext context = application.run("--scoring.stars.weight=1.5", "--scoring.forks.weight=0.5")) {
+        try (ConfigurableApplicationContext context = application.run("--scoring.stars.weight=1.5", "--scoring.forks.weight=0.5", "--scoring.freshness.weight=0.35")) {
             fail("Not supposed to reach here");
         } catch (InvalidWeightsException e) {
             assertThat(e.getMessage()).contains("Weights must sum to 1.0");

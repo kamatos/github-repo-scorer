@@ -20,13 +20,18 @@ class ScoringStrategyV1Test {
     void shouldCalculateScoreSuccessfullyWithValidWeights() {
         // Given
         var scoringProperties = new ScoringProperties();
-        scoringProperties.setStars(starsConfig(0.5, 10000));
-        scoringProperties.setForks(forksConfig(0.5, 10000));
+        scoringProperties.setStars(starsConfig(0.45, 10000));
+        scoringProperties.setForks(forksConfig(0.2, 10000));
+        scoringProperties.setFreshness(freshnessConfig(0.35, 90));
 
         var scoringStrategy = new ScoringStrategyV1(scoringProperties, ForkJoinPool.commonPool());
         scoringStrategy.afterSingletonsInstantiated();
 
-        ScoringContext context = ScoringContext.builder().stars(1000).forks(500).build();
+        ScoringContext context = ScoringContext.builder()
+                .stars(1000)
+                .forks(500)
+                .daysSinceUpdate(30)
+                .build();
 
         // When
         BigDecimal score = scoringStrategy.calculateScore(context);
@@ -43,13 +48,14 @@ class ScoringStrategyV1Test {
         var scoringProperties = new ScoringProperties();
         scoringProperties.setStars(starsConfig(0.3, 10000));
         scoringProperties.setForks(forksConfig(0.5, 10000));
+        scoringProperties.setFreshness(freshnessConfig(0.1, 90));
 
         var scoringStrategy = new ScoringStrategyV1(scoringProperties, ForkJoinPool.commonPool());
 
         // When & Then
         assertThatThrownBy(scoringStrategy::afterSingletonsInstantiated)
                 .isInstanceOf(InvalidWeightsException.class)
-                .hasMessageContaining("Weights must sum to 1.0, but sum is: 0.8");
+                .hasMessageContaining("Weights must sum to 1.0, but sum is: 0.9");
     }
 
     @Test
@@ -58,14 +64,15 @@ class ScoringStrategyV1Test {
         // Given
         var scoringProperties = new ScoringProperties();
         scoringProperties.setStars(starsConfig(1.5, 10000));
-        scoringProperties.setForks(forksConfig(0.5, 10000));
+        scoringProperties.setForks(forksConfig(0.2, 10000));
+        scoringProperties.setFreshness(freshnessConfig(0.35, 90));
 
         var scoringStrategy = new ScoringStrategyV1(scoringProperties, ForkJoinPool.commonPool());
 
         // When & Then
         assertThatThrownBy(scoringStrategy::afterSingletonsInstantiated)
                 .isInstanceOf(InvalidWeightsException.class)
-                .hasMessage("Weights must sum to 1.0, but sum is: 2.0");
+                .hasMessage("Weights must sum to 1.0, but sum is: 2.05");
     }
 
     @Test
@@ -91,5 +98,12 @@ class ScoringStrategyV1Test {
         forks.setWeight(weight);
         forks.setCap(cap);
         return forks;
+    }
+
+    private static ScoringProperties.Freshness freshnessConfig(double weight, int halfLifeDays) {
+        ScoringProperties.Freshness freshness = new ScoringProperties.Freshness();
+        freshness.setWeight(weight);
+        freshness.setHalfLifeDays(halfLifeDays);
+        return freshness;
     }
 }

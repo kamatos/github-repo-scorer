@@ -8,6 +8,7 @@ import com.gerard.githubreposcorer.scoring.model.ScoringContext;
 import com.gerard.githubreposcorer.scoring.model.ScoringResult;
 import com.gerard.githubreposcorer.scoring.rule.CompositeScoringRule;
 import com.gerard.githubreposcorer.scoring.rule.ForksScoringRule;
+import com.gerard.githubreposcorer.scoring.rule.FreshnessScoringRule;
 import com.gerard.githubreposcorer.scoring.rule.ScoringRule;
 import com.gerard.githubreposcorer.scoring.rule.StarsScoringRule;
 import com.gerard.githubreposcorer.util.MathUtils;
@@ -40,11 +41,12 @@ public class ScoringStrategyV1 implements ScoringStrategy, SmartInitializingSing
     public void afterSingletonsInstantiated() {
         StarsScoringRule starsRule = new StarsScoringRule(scoringProperties.getStars());
         ForksScoringRule forksRule = new ForksScoringRule(scoringProperties.getForks());
+        FreshnessScoringRule freshnessRule = new FreshnessScoringRule(scoringProperties.getFreshness());
 
-        validateWeights(List.of(starsRule, forksRule));
+        validateWeights(List.of(starsRule, forksRule, freshnessRule));
 
         ruleChain = new CompositeScoringRule(
-                List.of(starsRule, forksRule),
+                List.of(starsRule, forksRule, freshnessRule),
                 executorService
         );
     }

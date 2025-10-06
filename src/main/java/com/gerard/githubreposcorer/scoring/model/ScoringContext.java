@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ScoringContext {
     private int stars;
     private int forks;
+    private int daysSinceUpdate;
     private final ConcurrentMap<String, ScoringResult> results = new ConcurrentHashMap<>();
 
     public void addResult(ScoringResult result) {

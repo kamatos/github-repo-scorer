@@ -10,6 +10,7 @@ public class ScoringProperties {
     private Strategy strategy = new Strategy();
     private Stars stars = new Stars();
     private Forks forks = new Forks();
+    private Freshness freshness = new Freshness();
 
     @Data
     public static class Strategy {
@@ -19,12 +20,18 @@ public class ScoringProperties {
     @Data
     public static class Stars {
         private int cap = 10000;
-        private double weight = 0.5;
+        private double weight = 0.45;
     }
 
     @Data
     public static class Forks {
         private int cap = 10000;
-        private double weight = 0.5;
+        private double weight = 0.2;
+    }
+
+    @Data
+    public static class Freshness {
+        private int halfLifeDays = 90;
+        private double weight = 0.35;
     }
 }

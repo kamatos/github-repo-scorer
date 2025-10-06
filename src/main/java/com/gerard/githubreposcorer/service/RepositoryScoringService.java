@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,10 +44,16 @@ public class RepositoryScoringService {
     }
 
     private RepositoryScore scoreRepository(GitHubRepository repository) {
+        // Calculate days since last update
+        int daysSinceUpdate = repository.getUpdatedAt() != null 
+            ? (int) ChronoUnit.DAYS.between(repository.getUpdatedAt(), LocalDateTime.now())
+            : 0;
+
         // Create scoring context
         ScoringContext context = ScoringContext.builder()
                 .stars(repository.getStars())
                 .forks(repository.getForks())
+                .daysSinceUpdate(daysSinceUpdate)
                 .build();
 
         // Calculate score

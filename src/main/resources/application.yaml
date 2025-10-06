@@ -12,7 +12,10 @@ scoring:
     version: v1
   stars:
     cap: 10000
-    weight: 0.5
+    weight: 0.45
   forks:
     cap: 10000
-    weight: 0.5
+    weight: 0.2
+  freshness:
+    half-life-days: 90
+    weight: 0.35

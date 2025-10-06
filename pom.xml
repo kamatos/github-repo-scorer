@@ -154,7 +154,7 @@
                         <image>eclipse-temurin:21-jre-alpine</image>
                     </from>
                     <to>
-                        <image>github-repo-scorer:${project.version}</image>
+                        <image>github-repo-scorer:latest</image>
                     </to>
                     <container>
                         <jvmFlags>
@@ -164,6 +164,11 @@
                         <ports>
                             <port>8080</port>
                         </ports>
+                        <labels>
+                            <org.opencontainers.image.title>GitHub Repository Scorer</org.opencontainers.image.title>
+                            <org.opencontainers.image.description>Spring Boot application for scoring GitHub repositories</org.opencontainers.image.description>
+                            <org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
+                        </labels>
                     </container>
                 </configuration>
             </plugin>

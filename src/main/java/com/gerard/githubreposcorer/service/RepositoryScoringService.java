@@ -51,6 +51,7 @@ public class RepositoryScoringService {
 
         // Create scoring context
         ScoringContext context = ScoringContext.builder()
+                .name(repository.getFullName())
                 .stars(repository.getStars())
                 .forks(repository.getForks())
                 .daysSinceUpdate(daysSinceUpdate)

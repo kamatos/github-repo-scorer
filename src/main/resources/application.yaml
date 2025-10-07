@@ -19,3 +19,7 @@ scoring:
   freshness:
     half-life-days: 90
     weight: 0.35
+
+logging:
+  level:
+    com.gerard.githubreposcorer.scoring: DEBUG

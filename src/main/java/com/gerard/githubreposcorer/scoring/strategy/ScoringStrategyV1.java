@@ -55,7 +55,12 @@ public class ScoringStrategyV1 implements ScoringStrategy, SmartInitializingSing
     public BigDecimal calculateScore(ScoringContext context) {
         ruleChain.execute(context);
 
-        return calculateFinalScore(context.getResults());
+        List<ScoringResult> results = context.getResults();
+
+        if (log.isDebugEnabled()) {
+            printRulesEvaluationReport(context, results);
+        }
+        return calculateFinalScore(results);
     }
 
     private void validateWeights(List<ScoringRule> rules) {
@@ -75,6 +80,70 @@ public class ScoringStrategyV1 implements ScoringStrategy, SmartInitializingSing
 
         if (hasExcessiveWeight) {
             throw new InvalidWeightsException("No individual weight can exceed 1.0");
+        }
+    }
+
+    private void printRulesEvaluationReport(ScoringContext context, List<ScoringResult> results) {
+        log.debug("=== RULES EVALUATION REPORT ===");
+        log.debug("Repository Name: {}", context.getName());
+        log.debug("Repository Metrics:");
+        log.debug("  - Stars: {}", context.getStars());
+        log.debug("  - Forks: {}", context.getForks());
+        log.debug("  - Days Since Update: {}", context.getDaysSinceUpdate());
+        log.debug("");
+        
+        log.debug("Scoring Configuration:");
+        log.debug("  - Stars: cap={}, weight={}", scoringProperties.getStars().getCap(), scoringProperties.getStars().getWeight());
+        log.debug("  - Forks: cap={}, weight={}", scoringProperties.getForks().getCap(), scoringProperties.getForks().getWeight());
+        log.debug("  - Freshness: halfLifeDays={}, weight={}", scoringProperties.getFreshness().getHalfLifeDays(), scoringProperties.getFreshness().getWeight());
+        log.debug("");
+        
+        log.debug("Rule Evaluation Details:");
+        BigDecimal totalWeightedScore = BigDecimal.ZERO;
+        
+        for (ScoringResult result : results) {
+            if (result.success()) {
+                BigDecimal weightedScore = result.score().multiply(result.weight());
+                totalWeightedScore = totalWeightedScore.add(weightedScore, MathUtils.MATH_CONTEXT);
+                
+                log.debug("  ✓ {}:", result.ruleName());
+                log.debug("    - Raw Score: {}", result.score());
+                log.debug("    - Weight: {}", result.weight());
+                log.debug("    - Weighted Score: {}", weightedScore);
+                
+                // Add specific calculation details based on rule type
+                addRuleSpecificDetails(result, context);
+            } else {
+                log.debug("  ✗ {}: FAILED - {}", result.ruleName(), result.errorMessage());
+            }
+        }
+        
+        log.debug("");
+        log.debug("Final Score Calculation:");
+        log.debug("  - Total Weighted Score: {}", totalWeightedScore);
+        log.debug("=== END RULES EVALUATION REPORT ===");
+    }
+    
+    private void addRuleSpecificDetails(ScoringResult result, ScoringContext context) {
+        switch (result.ruleName()) {
+            case "StarsScoringRule" -> {
+                int stars = context.getStars();
+                int cap = scoringProperties.getStars().getCap();
+                log.debug("    - Input: stars={}, cap={}", stars, cap);
+                log.debug("    - Calculation: normLog({}, {}) = {}", stars, cap, result.score());
+            }
+            case "ForksScoringRule" -> {
+                int forks = context.getForks();
+                int cap = scoringProperties.getForks().getCap();
+                log.debug("    - Input: forks={}, cap={}", forks, cap);
+                log.debug("    - Calculation: normLog({}, {}) = {}", forks, cap, result.score());
+            }
+            case "FreshnessScoringRule" -> {
+                int daysSinceUpdate = context.getDaysSinceUpdate();
+                int halfLifeDays = scoringProperties.getFreshness().getHalfLifeDays();
+                log.debug("    - Input: daysSinceUpdate={}, halfLifeDays={}", daysSinceUpdate, halfLifeDays);
+                log.debug("    - Calculation: freshnessFromDays({}, {}) = {}", daysSinceUpdate, halfLifeDays, result.score());
+            }
         }
     }
 

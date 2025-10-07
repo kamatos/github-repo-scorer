@@ -11,9 +11,10 @@ import java.util.concurrent.ConcurrentMap;
 @Builder
 @Getter
 public class ScoringContext {
-    private int stars;
-    private int forks;
-    private int daysSinceUpdate;
+    private final String name;
+    private final int stars;
+    private final int forks;
+    private final int daysSinceUpdate;
     private final ConcurrentMap<String, ScoringResult> results = new ConcurrentHashMap<>();
 
     public void addResult(ScoringResult result) {

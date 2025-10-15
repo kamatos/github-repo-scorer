@@ -13,6 +13,10 @@ Each repository is evaluated against three major scoring rules:
 - **Forks**: Measures community engagement using logarithmic normalization
 - **Freshness**: Measures how recently the repository was updated using exponential decay
 
+
+123
+
+
 The final score is calculated as a weighted sum of these individual rule scores, providing a comprehensive assessment of
 repository quality and activity.
 

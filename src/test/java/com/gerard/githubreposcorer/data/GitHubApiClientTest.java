@@ -49,7 +49,6 @@ class GitHubApiClientTest {
         gitHubApiProperties = new GitHubApiProperties();
         gitHubApiProperties.setBaseUrl("https://api.github.com");
         gitHubApiProperties.setToken("test-token");
-        gitHubApiProperties.setTimeout(30000);
 
         gitHubApiClient = new GitHubApiClient(restClient, gitHubApiProperties);
     }

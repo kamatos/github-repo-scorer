@@ -10,5 +10,4 @@ import org.springframework.stereotype.Component;
 public class GitHubApiProperties {
     private String token = "";
     private String baseUrl = "https://api.github.com";
-    private int timeout = 30000;
 }
